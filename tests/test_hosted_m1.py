@@ -60,12 +60,19 @@ class M1InvariantTests(unittest.TestCase):
         for table, trigger in expected.items():
             self.assertIn(("table", table), objects)
             self.assertIn(("trigger", trigger), objects)
-        foreign_keys = self.store.connection.execute(
+        bronze_foreign_keys = self.store.connection.execute(
             "PRAGMA foreign_key_list(bronze_attempts)"
         ).fetchall()
         self.assertIn(
             ("parent_quarantine_id", "quarantine", "quarantine_id"),
-            {(row["from"], row["table"], row["to"]) for row in foreign_keys},
+            {(row["from"], row["table"], row["to"]) for row in bronze_foreign_keys},
+        )
+        quarantine_foreign_keys = self.store.connection.execute(
+            "PRAGMA foreign_key_list(quarantine)"
+        ).fetchall()
+        self.assertIn(
+            ("attempt_id", "bronze_attempts", "attempt_id"),
+            {(row["from"], row["table"], row["to"]) for row in quarantine_foreign_keys},
         )
 
     def test_invalid_event_is_quarantined_and_cannot_reach_trusted_layers(self) -> None:

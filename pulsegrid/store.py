@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS metadata (
 );
 CREATE TABLE IF NOT EXISTS quarantine (
     quarantine_id TEXT PRIMARY KEY,
-    attempt_id TEXT UNIQUE NOT NULL,
+    attempt_id TEXT UNIQUE NOT NULL REFERENCES bronze_attempts(attempt_id),
     event_id TEXT NOT NULL,
     reason_code TEXT NOT NULL,
     details TEXT NOT NULL,
