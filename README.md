@@ -4,7 +4,7 @@
 
 PulseGrid makes a streaming data system visible: events travel through contract validation, medallion processing, quarantine, replay, and recovery while operational metrics explain what the system is doing.
 
-> Status: **M2 candidate — deterministic operational reliability**. M0 and M1 are closed with exact-main hosted evidence. M2 is under hosted verification. No deployment, scale, live-demo, concurrency, or production-readiness claim is made.
+> Status: **M2 complete — deterministic operational reliability**. M0, M1, and M2 are closed with exact-main hosted evidence. M3 is next. No deployment, scale, live-demo, concurrency, or production-readiness claim is made.
 
 ## Product promise
 
@@ -24,7 +24,7 @@ Controlled source
 
 - **M0:** product contract, visual storyboard, architecture decisions — complete
 - **M1:** deterministic exact-version validation, atomic SQLite evidence, quarantine, idempotent Gold projection, and identity-preserving replay — complete
-- **M2:** deterministic failure injection, persisted source incidents, and exactly five fail-closed operational metrics — candidate
+- **M2:** deterministic failure injection, persisted source incidents, and exactly five fail-closed operational metrics — complete
 - **M3:** living topology UI and hosted demo
 - **M4:** bounded AI incident investigator and portfolio evidence
 
