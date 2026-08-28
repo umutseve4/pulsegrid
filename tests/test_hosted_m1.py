@@ -50,7 +50,7 @@ class M1InvariantTests(unittest.TestCase):
                 "SELECT type, name FROM sqlite_master WHERE type IN ('table', 'trigger')"
             )
         }
-        self.assertEqual("1.0.0", version)
+        self.assertEqual("2.0.0", version)
         expected = {
             "bronze_attempts": "immutable_bronze_event_id",
             "quarantine": "immutable_quarantine_event_id",

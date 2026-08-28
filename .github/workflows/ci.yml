@@ -1,4 +1,4 @@
-name: M1 Core CI
+name: Core Reliability CI
 
 on:
   pull_request:
@@ -11,12 +11,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: m1-core-${{ github.ref }}
+  group: core-reliability-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
-    name: Prove M1 fail-closed invariants
+    name: Prove M1 and M2 fail-closed invariants
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
