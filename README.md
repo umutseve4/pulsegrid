@@ -4,7 +4,7 @@
 
 PulseGrid makes a streaming data system visible: events travel through contract validation, medallion processing, quarantine, replay, and recovery while operational metrics explain what the system is doing.
 
-> Status: **M0 — product contract**. No production-readiness, deployment, scale, or live-demo claim is made.
+> Status: **M1 candidate — executable reliability core**. Local Python 3.12 tests cover the bounded core; hosted CI and merge evidence are required before M1 closes. No deployment, scale, live-demo, or production claim is made.
 
 ## Product promise
 
@@ -22,11 +22,21 @@ Controlled source
 
 ## Evidence-first milestones
 
-- **M0:** product contract, visual storyboard, architecture decisions
-- **M1:** deterministic event flow and contract validation
-- **M2:** quarantine, failure injection, replay, and operational metrics
+- **M0:** product contract, visual storyboard, architecture decisions — complete
+- **M1:** deterministic exact-version validation, atomic SQLite evidence, quarantine, idempotent Gold projection, and identity-preserving replay — candidate
+- **M2:** failure injection and operational metrics
 - **M3:** living topology UI and hosted demo
 - **M4:** bounded AI incident investigator and portfolio evidence
+
+## M1 executable core
+
+The candidate core uses only the Python 3.12 standard library. One transactional path records every JSON-compatible delivery attempt in Bronze, then either quarantines rejected input or derives Silver and idempotently projects Gold. Unknown schema versions and non-finite readings fail closed. Replays retain the original `event_id`, carry a database-enforced reference to their quarantine record, and return through the same validator and ingest path. Reuse of an existing identity with different normalized content is quarantined as `IDENTITY_CONFLICT`.
+
+Run the deterministic invariant suite:
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py' -v
+```
 
 ## M0 evidence
 
@@ -35,4 +45,4 @@ Controlled source
 - [Visual storyboard](docs/VISUAL_STORYBOARD.md)
 - [Canonical acceptance gates](docs/M0_ACCEPTANCE.md)
 
-Hosted CI validates the documentation surface; it does not prove runtime, deployment, or production readiness.
+Documentation CI proves the M0 documentation surface. M1 Core CI must prove the executable invariant suite on exact GitHub SHAs. Neither workflow establishes deployment, measured throughput, or production readiness.

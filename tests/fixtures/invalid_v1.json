@@ -1,0 +1,10 @@
+{
+  "event_id": "evt-0002",
+  "schema_version": "1.0.0",
+  "origin": "SIMULATION",
+  "payload": {
+    "sensor_id": "sensor-crimson-01",
+    "reading": "not-a-number",
+    "source_created_at": "2026-08-28T12:00:01Z"
+  }
+}
