@@ -7,13 +7,17 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
+LEGACY_SCHEMA_VERSION = "1.0.0"
 
-DDL = """
+METADATA_DDL = """
 CREATE TABLE IF NOT EXISTS metadata (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+"""
+
+CORE_DDL = """
 CREATE TABLE IF NOT EXISTS quarantine (
     quarantine_id TEXT PRIMARY KEY,
     attempt_id TEXT UNIQUE NOT NULL REFERENCES bronze_attempts(attempt_id),
@@ -61,23 +65,50 @@ BEFORE UPDATE OF event_id ON gold_events
 BEGIN SELECT RAISE(ABORT, 'event_id is immutable'); END;
 """
 
+M2_DDL = """
+CREATE TABLE IF NOT EXISTS source_incidents (
+    incident_id TEXT PRIMARY KEY,
+    source_name TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    degraded_at TEXT NOT NULL,
+    recovered_at TEXT,
+    CHECK (recovered_at IS NULL OR recovered_at >= degraded_at)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS one_open_incident_per_source
+ON source_incidents(source_name) WHERE recovered_at IS NULL;
+"""
+
 
 class EvidenceStore:
     def __init__(self, database: str | Path = ":memory:") -> None:
         self.connection = sqlite3.connect(str(database), isolation_level=None)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA foreign_keys = ON")
-        self.connection.executescript(DDL)
-        self.connection.execute(
-            "INSERT INTO metadata(key, value) VALUES ('schema_version', ?) "
-            "ON CONFLICT(key) DO NOTHING",
-            (SCHEMA_VERSION,),
-        )
-        actual = self.connection.execute(
+        self.connection.executescript(METADATA_DDL)
+        row = self.connection.execute(
             "SELECT value FROM metadata WHERE key = 'schema_version'"
-        ).fetchone()["value"]
-        if actual != SCHEMA_VERSION:
+        ).fetchone()
+        actual = None if row is None else row["value"]
+        if actual not in {None, LEGACY_SCHEMA_VERSION, SCHEMA_VERSION}:
+            self.connection.close()
             raise RuntimeError(f"unsupported evidence schema {actual}")
+        if actual is None:
+            self.connection.executescript(
+                "BEGIN IMMEDIATE;\n"
+                + CORE_DDL
+                + M2_DDL
+                + f"INSERT INTO metadata(key, value) VALUES ('schema_version', '{SCHEMA_VERSION}');\n"
+                + "COMMIT;"
+            )
+        elif actual == LEGACY_SCHEMA_VERSION:
+            self.connection.executescript(
+                "BEGIN IMMEDIATE;\n"
+                + M2_DDL
+                + f"UPDATE metadata SET value = '{SCHEMA_VERSION}' WHERE key = 'schema_version';\n"
+                + "COMMIT;"
+            )
+        else:
+            self.connection.executescript(CORE_DDL + M2_DDL)
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
@@ -91,7 +122,13 @@ class EvidenceStore:
             self.connection.commit()
 
     def count(self, table: str) -> int:
-        allowed = {"bronze_attempts", "quarantine", "silver_events", "gold_events"}
+        allowed = {
+            "bronze_attempts",
+            "quarantine",
+            "silver_events",
+            "gold_events",
+            "source_incidents",
+        }
         if table not in allowed:
             raise ValueError(f"unsupported evidence table: {table}")
         return int(self.connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
