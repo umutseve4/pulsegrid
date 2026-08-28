@@ -30,7 +30,7 @@ Controlled source
 
 ## M1 executable core
 
-The candidate core uses only the Python 3.12 standard library. One transactional path records every delivery attempt in Bronze, then either quarantines rejected input or derives Silver and idempotently projects Gold. Unknown schema versions fail closed. Replays retain the original `event_id`, reference their quarantine record, and return through the same validator and ingest path. Reuse of an existing identity with different normalized content is quarantined as `IDENTITY_CONFLICT`.
+The candidate core uses only the Python 3.12 standard library. One transactional path records every JSON-compatible delivery attempt in Bronze, then either quarantines rejected input or derives Silver and idempotently projects Gold. Unknown schema versions and non-finite readings fail closed. Replays retain the original `event_id`, carry a database-enforced reference to their quarantine record, and return through the same validator and ingest path. Reuse of an existing identity with different normalized content is quarantined as `IDENTITY_CONFLICT`.
 
 Run the deterministic invariant suite:
 

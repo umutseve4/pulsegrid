@@ -14,22 +14,26 @@ CREATE TABLE IF NOT EXISTS metadata (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS bronze_attempts (
-    attempt_id TEXT PRIMARY KEY,
-    event_id TEXT NOT NULL,
-    envelope_json TEXT NOT NULL,
-    delivery_kind TEXT NOT NULL CHECK (delivery_kind IN ('delivery', 'replay')),
-    parent_quarantine_id TEXT,
-    created_at TEXT NOT NULL
-);
 CREATE TABLE IF NOT EXISTS quarantine (
     quarantine_id TEXT PRIMARY KEY,
-    attempt_id TEXT UNIQUE NOT NULL REFERENCES bronze_attempts(attempt_id),
+    attempt_id TEXT UNIQUE NOT NULL,
     event_id TEXT NOT NULL,
     reason_code TEXT NOT NULL,
     details TEXT NOT NULL,
     envelope_json TEXT NOT NULL,
     created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS bronze_attempts (
+    attempt_id TEXT PRIMARY KEY,
+    event_id TEXT NOT NULL,
+    envelope_json TEXT NOT NULL,
+    delivery_kind TEXT NOT NULL CHECK (delivery_kind IN ('delivery', 'replay')),
+    parent_quarantine_id TEXT REFERENCES quarantine(quarantine_id),
+    created_at TEXT NOT NULL,
+    CHECK (
+        (delivery_kind = 'delivery' AND parent_quarantine_id IS NULL)
+        OR (delivery_kind = 'replay' AND parent_quarantine_id IS NOT NULL)
+    )
 );
 CREATE TABLE IF NOT EXISTS silver_events (
     attempt_id TEXT PRIMARY KEY REFERENCES bronze_attempts(attempt_id),

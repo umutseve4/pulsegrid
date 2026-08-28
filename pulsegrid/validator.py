@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from datetime import datetime
 from typing import Any, Mapping
 
@@ -66,10 +67,14 @@ def validate(envelope: Mapping[str, Any] | object) -> ValidationResult:
         errors.append(f"missing payload fields: {', '.join(missing_payload)}")
     if "sensor_id" in payload and not _nonempty_string(payload["sensor_id"]):
         errors.append("sensor_id must be a non-empty string")
-    if "reading" in payload and (
-        isinstance(payload["reading"], bool) or not isinstance(payload["reading"], (int, float))
-    ):
-        errors.append("reading must be a number")
+    if "reading" in payload:
+        reading = payload["reading"]
+        if (
+            isinstance(reading, bool)
+            or not isinstance(reading, (int, float))
+            or not math.isfinite(reading)
+        ):
+            errors.append("reading must be a finite number")
     if "source_created_at" in payload and not _valid_utc_timestamp(payload["source_created_at"]):
         errors.append("source_created_at must be an ISO 8601 UTC timestamp ending in Z")
     if errors:
