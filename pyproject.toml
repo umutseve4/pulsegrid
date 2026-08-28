@@ -1,0 +1,9 @@
+[project]
+name = "pulsegrid"
+version = "0.1.0"
+description = "Bounded data reliability laboratory core"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["pulsegrid*"]

@@ -1,0 +1,32 @@
+name: M1 Core CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m1-core-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Prove M1 fail-closed invariants
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run executable invariant tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
