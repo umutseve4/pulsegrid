@@ -6,7 +6,7 @@ PulseGrid is an observable streaming-data reliability lab, not a static dashboar
 
 ## Primary user story
 
-As a technical recruiter or engineering reviewer, I can watch deterministic events move through a pipeline, inject a controlled fault, observe its operational impact, and verify quarantine and recovery from visible evidence.
+As a technical recruiter or engineering reviewer, I can eventually watch deterministic events move through a pipeline, inject a controlled fault, observe its operational impact, and verify quarantine and recovery from visible evidence.
 
 ## MVP scope
 
@@ -19,7 +19,7 @@ As a technical recruiter or engineering reviewer, I can watch deterministic even
 7. Idempotent replay for eligible quarantined events.
 8. Five metrics: throughput, processing lag, freshness, error rate, and recovery time.
 9. A living topology UI with loading, empty, degraded, outage, recovery, and healthy states.
-10. Hosted verification through GitHub Actions and a public demo URL.
+10. Hosted verification through GitHub Actions and a public demo URL in later evidence-gated milestones.
 
 ## Explicit non-goals for MVP
 
@@ -60,16 +60,10 @@ As a technical recruiter or engineering reviewer, I can watch deterministic even
 - The incident timeline can replay the transition: detect -> quarantine -> diagnose -> repair -> replay -> recover.
 - Reduced-motion and keyboard-accessible alternatives are required.
 
-## M0 acceptance gates
+## Architecture boundary
 
-- [x] Public repository exists.
-- [x] Product promise and non-goals are written.
-- [x] MVP boundary is written.
-- [x] Failure and replay semantics are written.
-- [x] Visual state contract is written.
-- [ ] Architecture decision record is reviewed.
-- [ ] Visual storyboard is reviewed.
-- [ ] CI validates documentation links and formatting.
-- [ ] M0 pull request is green and merged.
+[ADR-0001](adr/0001-smallest-honest-architecture.md) defines the smallest planned executable architecture, event lifecycle, persistence boundary, idempotency rule, schema strategy, metric formulas, deployment boundary, and rejected alternatives.
 
-M0 is complete only when every gate above has authoritative GitHub evidence.
+## Acceptance source of truth
+
+The only canonical M0 checklist is [`M0_ACCEPTANCE.md`](M0_ACCEPTANCE.md). This document intentionally does not duplicate that checklist.

@@ -4,11 +4,11 @@
 
 PulseGrid makes a streaming data system visible: events travel through contract validation, medallion processing, quarantine, replay, and recovery while operational metrics explain what the system is doing.
 
-> Status: **M0 — product contract**. No production-readiness or scale claim is made.
+> Status: **M0 — product contract**. No production-readiness, deployment, scale, or live-demo claim is made.
 
 ## Product promise
 
-A recruiter can open one live URL, watch the pipeline operate, inject a bounded failure, and verify that invalid events are quarantined and recoverable events are replayed without silently corrupting the trusted output.
+A recruiter can eventually open one hosted demo, watch the pipeline operate, inject a bounded failure, and verify that invalid events are quarantined and recoverable events are replayed without silently corrupting trusted output. That hosted demo is a planned M3 outcome, not a current capability.
 
 ## Planned flow
 
@@ -28,4 +28,11 @@ Controlled source
 - **M3:** living topology UI and hosted demo
 - **M4:** bounded AI incident investigator and portfolio evidence
 
-The acceptance contract for M0 is in [`docs/M0_PRODUCT_CONTRACT.md`](docs/M0_PRODUCT_CONTRACT.md).
+## M0 evidence
+
+- [Product contract](docs/M0_PRODUCT_CONTRACT.md)
+- [Architecture decision record](docs/adr/0001-smallest-honest-architecture.md)
+- [Visual storyboard](docs/VISUAL_STORYBOARD.md)
+- [Canonical acceptance gates](docs/M0_ACCEPTANCE.md)
+
+Hosted CI validates the documentation surface; it does not prove runtime, deployment, or production readiness.
