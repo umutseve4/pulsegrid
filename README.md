@@ -1,16 +1,28 @@
-# PulseGrid
+<h1 align="center">PulseGrid</h1>
 
-**A living data reliability laboratory.**
+<p align="center">
+  A streaming pipeline you can break on purpose.<br>
+  Bad events are quarantined, repaired events are replayed under their original identity,<br>
+  and five fail-closed metrics say <b>"unavailable"</b> rather than inventing a number.
+</p>
 
-PulseGrid makes a streaming data system visible: events travel through contract validation, medallion processing, quarantine, replay, and recovery while operational metrics explain what the system is doing.
+<p align="center">
+  <img src="https://img.shields.io/badge/operational%20metrics-5-FF4D4F?style=flat-square" alt="5 metrics">
+  <img src="https://img.shields.io/badge/runtime%20dependencies-0-FF4D4F?style=flat-square" alt="0 dependencies">
+  <img src="https://img.shields.io/badge/milestones%20closed-M0%20%C2%B7%20M1%20%C2%B7%20M2-FF4D4F?style=flat-square" alt="M0 M1 M2 closed">
+</p>
 
-> Status: **M2 complete — deterministic operational reliability**. M0, M1, and M2 are closed with exact-main hosted evidence. M3 is next. No deployment, scale, live-demo, concurrency, or production-readiness claim is made.
+---
 
-## Product promise
+## Run the invariant suite
 
-A recruiter can eventually open one hosted demo, watch the pipeline operate, inject a bounded failure, and verify that invalid events are quarantined and recoverable events are replayed without silently corrupting trusted output. That hosted demo is a planned M3 outcome, not a current capability.
+```bash
+python -m unittest discover -s tests -p 'test_*.py' -v
+```
 
-## Planned flow
+The core uses only the **Python 3.12 standard library** — nothing to install.
+
+## What the system does with an event
 
 ```text
 Controlled source
@@ -20,39 +32,54 @@ Controlled source
        `-> invalid: Quarantine / DLQ -> Repair -> Replay
 ```
 
-## Evidence-first milestones
+One transactional path records every JSON-compatible delivery attempt in Bronze,
+then either quarantines rejected input or derives Silver and idempotently projects
+Gold. Unknown schema versions and non-finite readings **fail closed**. Replays
+retain the original `event_id`, carry a database-enforced reference to their
+quarantine record, and return through the same validator and ingest path. Reuse of
+an existing identity with different normalized content is quarantined as
+`IDENTITY_CONFLICT`.
 
-- **M0:** product contract, visual storyboard, architecture decisions — complete
-- **M1:** deterministic exact-version validation, atomic SQLite evidence, quarantine, idempotent Gold projection, and identity-preserving replay — complete
-- **M2:** deterministic failure injection, persisted source incidents, and exactly five fail-closed operational metrics — complete
-- **M3:** living topology UI and hosted demo
-- **M4:** bounded AI incident investigator and portfolio evidence
+M2 adds an explicit `after_bronze` fail-once injection point **inside** that
+transaction, a persisted one-open-incident-per-source health model, and exactly
+five metrics:
 
-## Executable laboratory
+| # | Metric | Behaviour when evidence is missing |
+|---|---|---|
+| 1 | `acceptance_rate` | `status="unavailable"`, `value=None` |
+| 2 | `quarantine_rate` | `status="unavailable"`, `value=None` |
+| 3 | `duplicate_delivery_rate` | `status="unavailable"`, `value=None` |
+| 4 | `replay_success_rate` | `status="unavailable"`, `value=None` |
+| 5 | `latest_recovery_seconds` | derived from persisted incident timestamps via an injectable clock |
 
-The core uses only the Python 3.12 standard library. One transactional path records every JSON-compatible delivery attempt in Bronze, then either quarantines rejected input or derives Silver and idempotently projects Gold. Unknown schema versions and non-finite readings fail closed. Replays retain the original `event_id`, carry a database-enforced reference to their quarantine record, and return through the same validator and ingest path. Reuse of an existing identity with different normalized content is quarantined as `IDENTITY_CONFLICT`.
+A metric never guesses: if its denominator or prerequisite evidence does not exist,
+it says so.
 
-M2 adds an explicit `after_bronze` fail-once injection point inside that transaction, a persisted one-open-incident-per-source health model, and exactly five metrics:
+## Milestones
 
-1. `acceptance_rate`
-2. `quarantine_rate`
-3. `duplicate_delivery_rate`
-4. `replay_success_rate`
-5. `latest_recovery_seconds`
+- **M0** — product contract, visual storyboard, architecture decisions — *complete*
+- **M1** — deterministic exact-version validation, atomic SQLite evidence, quarantine, idempotent Gold projection, identity-preserving replay — *complete*
+- **M2** — deterministic failure injection, persisted source incidents, exactly five fail-closed operational metrics — *complete*
+- **M3** — living topology UI and hosted demo
+- **M4** — bounded AI incident investigator and portfolio evidence
 
-A metric returns `status="unavailable"` and `value=None` whenever its denominator or prerequisite evidence does not exist. Recovery duration is derived from persisted incident timestamps supplied through an injectable clock.
+M0, M1 and M2 are closed with exact-`main` hosted evidence:
+[Product contract](docs/M0_PRODUCT_CONTRACT.md) ·
+[Architecture decision record](docs/adr/0001-smallest-honest-architecture.md) ·
+[Visual storyboard](docs/VISUAL_STORYBOARD.md) ·
+[Canonical acceptance gates](docs/M0_ACCEPTANCE.md)
 
-Run the deterministic invariant suite:
+## Limits
 
-```bash
-python -m unittest discover -s tests -p 'test_*.py' -v
-```
+The hosted demo — open one URL, watch the pipeline operate, inject a bounded
+failure, verify quarantine and replay — is a **planned M3 outcome, not a current
+capability**.
 
-## M0 evidence
+No deployment, scale, live-demo, concurrency, or production-readiness claim is
+made. Documentation CI proves the documentation surface; core CI proves the
+executable invariant suite on exact GitHub SHAs. Neither workflow establishes
+measured throughput, streaming scale, or concurrency behaviour.
 
-- [Product contract](docs/M0_PRODUCT_CONTRACT.md)
-- [Architecture decision record](docs/adr/0001-smallest-honest-architecture.md)
-- [Visual storyboard](docs/VISUAL_STORYBOARD.md)
-- [Canonical acceptance gates](docs/M0_ACCEPTANCE.md)
+---
 
-Documentation CI proves the documentation surface. Core CI proves the executable invariant suite on exact GitHub SHAs. Neither workflow establishes deployment, measured throughput, streaming scale, concurrency behavior, or production readiness.
+Reliability is not a feature you add at the end — it is whether the system tells the truth when it is broken.
